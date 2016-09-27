@@ -35,7 +35,7 @@ void Log(char *msg)
 
 
 const char *get_filename(void) {
-	return format_string("%s%s", get_timestamp(), LOGFILE);
+	return format_string("C:\\Logs\\%s%s", get_timestamp(), LOGFILE);
 }
 
 
@@ -136,4 +136,60 @@ void LogInfo(const char *fmt, ...)
 		}
 	}
 	Log("\n");
+}
+
+
+const char* buf_spec(const void* buf_addr, const long buf_len)
+{
+	static char ret[256];
+	if (4 == sizeof(void *))
+		sprintf(ret, "%p / %ld", buf_addr, (long)buf_len);
+	else
+		sprintf(ret, "%p / %ld", buf_addr, (long)buf_len);
+	return ret;
+}
+
+
+void LogBuffer(const void* value, const long size)
+{
+	if ((size <= 0) || (NULL == value))
+		return;
+
+	char strResult[4096] = { 0 };
+	int i;
+	char hex[256], ascii[256];
+	char *hex_ptr = hex, *ascii_ptr = ascii;
+	int offset = 0;
+
+	memset(hex, ' ', sizeof(hex));
+	memset(ascii, ' ', sizeof(ascii));
+	ascii[sizeof ascii - 1] = 0;
+	LogInfo("%s", buf_spec((void *)value, size));
+
+	for (i = 0; i < size; i++) {
+		unsigned char val;
+		if (i && (i % 16) == 0) {
+			LogInfo("\n    %08X  %s %s", offset, hex, ascii);
+			offset += 16;
+			hex_ptr = hex;
+			ascii_ptr = ascii;
+			memset(ascii, ' ', sizeof ascii - 1);
+		}
+		val = ((unsigned char *)value)[i];
+		/* hex */
+		sprintf(hex_ptr, "%02X ", val);
+		hex_ptr += 3;
+		/* ascii */
+		if (val > 31 && val < 128)
+			*ascii_ptr = val;
+		else
+			*ascii_ptr = '.';
+		ascii_ptr++;
+	}
+
+	/* padd */
+	while (strlen(hex) < 3 * 16)
+		strcat(hex, "   ");
+	LogInfo("\n    %08X  %s %s", offset, hex, ascii);
+	LogInfo("\n");
 }

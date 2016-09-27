@@ -12,5 +12,6 @@ const char	*get_filename(void);
 
 void		Log(char *message);    // logs a message to LOGFILE
 void		LogInfo(const char *fmt, ...); // logs a message; execution is interrupted
+void		LogBuffer(const void* value, const long size);
 
 #pragma once
